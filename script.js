@@ -433,12 +433,19 @@ function calculateMain() {
     document.getElementById("resCabH").innerText = cabH;
     document.getElementById("resTotalCabinets").innerText = totalCab;
 
-    // Hide both actual size and nearest size rows (calculations are now unified)
-    document.getElementById("actualSizeRow").style.display = "none";
+    // Update the actual size text
+    document.getElementById("resActualSize").innerText = `${actualW}mm x ${actualH}mm`;
+
+    // Show actual size for standard cabinets, hide for custom cabinets
+    if (isCustomCabinet) {
+        document.getElementById("actualSizeRow").style.display = "none";
+    } else {
+        document.getElementById("actualSizeRow").style.display = "block";
+    }
+
+    // Always hide the nearest size row (it's now redundant since we calculate based on nearest)
     document.getElementById("nearestSizeRow").style.display = "none";
 
-    // Update the text value for potential email usage
-    document.getElementById("resActualSize").innerText = `${actualW}mm x ${actualH}mm`;
 
 
     document.getElementById("resTotalResolution").innerText =
