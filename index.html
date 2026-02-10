@@ -17,10 +17,7 @@
             <div class="brand-subtext">Professional LED Configuration Tools</div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="page-navigation">
-            <button class="nav-btn active" data-page="page1">1. Screen Configuration</button>
-        </div>
+
 
         <div class="content-body">
 
@@ -116,8 +113,8 @@
                     <div class="col-full">
                         <label id="targetScreenLabel">Target Screen Size (Width x Height mm)</label>
                         <div class="input-group-dual">
-                            <input type="number" id="screenW" placeholder="Width (mm)" min="1">
-                            <input type="number" id="screenH" placeholder="Height (mm)" min="1">
+                            <input type="number" id="screenW" class="input-large" placeholder="Width (mm)" min="1">
+                            <input type="number" id="screenH" class="input-large" placeholder="Height (mm)" min="1">
                         </div>
                         <small id="screenSizeNote" style="color: #999; display: none; margin-top: 5px;">
                             ℹ️ Not required when using custom cabinet size
@@ -147,6 +144,11 @@
                                 px</strong> </div>
                         <div class="result-item" id="actualSizeRow">Actual Final Screen Size: <strong
                                 id="resActualSize">0mm x 0mm</strong></div>
+                        <div class="result-item" id="nearestSizeRow"
+                            style="display:none; background-color: #e6fffa; padding: 5px; border-radius: 4px; border: 1px solid #b2f5ea;">
+                            Nearest Achievable Size (Cabinet Basis): <strong id="resNearestSize"
+                                style="color: #008080;">0mm x 0mm</strong>
+                        </div>
 
                         <div><strong>POWER SPECIFICATIONS</strong></div>
                         <div class="result-item">Max Power Consumption (W/m²):<strong id="resPowerMax">0</strong></div>
@@ -198,11 +200,16 @@
                             id="verScreenSize">0mm x 0mm</strong></div>
                 </div>
             </div>
+
+
+
+        </div>
+    </div>
+
+
+
     <script src="script.js"></script>
-    <script src="display-config.js"></script>
 
 </body>
 
-
 </html>
-
