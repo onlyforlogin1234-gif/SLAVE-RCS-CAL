@@ -330,15 +330,23 @@ function calculateMain() {
         actualW = modW * mod.w;
         actualH = modH * mod.h;
     } else {
-        // For standard cabinet: use target screen size
+        // For standard cabinet: use NEAREST cabinet count (rounded)
         if (!screenW || !screenH) {
             alert("Please enter target screen size!");
             return;
         }
-        modW = Math.ceil(screenW / mod.w);
-        modH = Math.ceil(screenH / mod.h);
-        actualW = modW * mod.w;
-        actualH = modH * mod.h;
+
+        // Calculate nearest cabinet count
+        const nearestCabW = Math.max(1, Math.round(screenW / cab.w));
+        const nearestCabH = Math.max(1, Math.round(screenH / cab.h));
+
+        // Calculate actual dimensions based on nearest cabinets
+        actualW = nearestCabW * cab.w;
+        actualH = nearestCabH * cab.h;
+
+        // Calculate modules based on actual dimensions
+        modW = actualW / mod.w;
+        modH = actualH / mod.h;
     }
 
     const totalModules = modW * modH;
@@ -364,6 +372,26 @@ function calculateMain() {
     const totalResW = modW * selectedModuleResolution.w;
     const totalResH = modH * selectedModuleResolution.h;
     const totalPixels = totalResW * totalResH;
+
+    // ================= NEAREST SIZE CALCULATION (CABINET BASED) =================
+    let nearestSizeW = 0;
+    let nearestSizeH = 0;
+
+    if (!isCustomCabinet && cab.w > 0 && cab.h > 0) {
+        // Find nearest whole number of cabinets
+        // We use Math.round to find the closest fit (rounding up or down)
+        // e.g. 3000 / 960 = 3.125 -> 3 cabinets (2880mm)
+        // e.g. 3500 / 960 = 3.645 -> 4 cabinets (3840mm)
+        let nearCabW = Math.round(screenW / cab.w);
+        let nearCabH = Math.round(screenH / cab.h);
+
+        // Ensure at least 1 cabinet if input is present
+        if (nearCabW === 0 && screenW > 0) nearCabW = 1;
+        if (nearCabH === 0 && screenH > 0) nearCabH = 1;
+
+        nearestSizeW = nearCabW * cab.w;
+        nearestSizeH = nearCabH * cab.h;
+    }
 
     // ================= POWER DATA (FIXED) =================
     let powerData = null;
@@ -405,20 +433,13 @@ function calculateMain() {
     document.getElementById("resCabH").innerText = cabH;
     document.getElementById("resTotalCabinets").innerText = totalCab;
 
-    // Show/hide actual size based on cabinet type
-    const actualSizeRow = document.getElementById("actualSizeRow");
+    // Hide both actual size and nearest size rows (calculations are now unified)
+    document.getElementById("actualSizeRow").style.display = "none";
+    document.getElementById("nearestSizeRow").style.display = "none";
 
-    // Always update the text value so email can read it
-    document.getElementById("resActualSize").innerText =
-        `${actualW}mm x ${actualH}mm`;
+    // Update the text value for potential email usage
+    document.getElementById("resActualSize").innerText = `${actualW}mm x ${actualH}mm`;
 
-    if (isCustomCabinet) {
-        // Hide actual size row for custom cabinets (but value is set)
-        actualSizeRow.style.display = "none";
-    } else {
-        // Show actual size for standard cabinets
-        actualSizeRow.style.display = "block";
-    }
 
     document.getElementById("resTotalResolution").innerText =
         `${totalResW}px × ${totalResH}px`;
