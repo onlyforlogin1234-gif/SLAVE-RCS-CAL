@@ -1,706 +1,718 @@
-:root {
-    --brand-primary: #003366;
-    --brand-accent: #00AEEF;
-    --brand-light: #f4f7f6;
-    --brand-bg-soft: #eef6fc;
-    --text-dark: #333;
-    --text-muted: #666;
-    --white: #ffffff;
-    --border-light: #dceefc;
+// ================ HELPER =================
+
+function parseDimensionString(str) {
+    if (!str) return { w: 0, h: 0 };
+
+    const parts = str.toLowerCase().replace(/\s/g, "").split("x");
+    if (parts.length !== 2) return { w: 0, h: 0 };
+
+    return {
+        w: Number(parts[0]),
+        h: Number(parts[1])
+    };
 }
 
-/* ==============================
-   Base Styles
-================================*/
-* {
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--brand-light);
-    margin: 0;
-    padding: 20px;
-    color: var(--text-dark);
-}
-
-/* ==============================
-   Main Container
-================================*/
-.calculator-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: var(--white);
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
-
-/* ==============================
-   Branding Header
-================================*/
-.brand-header {
-    background: linear-gradient(90deg,
-            var(--brand-primary) 0%,
-            var(--brand-accent) 100%);
-    color: var(--white);
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.brand-logo-text {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-.brand-subtext {
-    font-size: 14px;
-    opacity: 0.85;
-}
-
-/* ==============================
-   Page Navigation
-================================*/
-.page-navigation {
-    display: flex;
-    background: #f8f9fa;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.nav-btn {
-    flex: 1;
-    padding: 15px 20px;
-    background: none;
-    border: none;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
-    position: relative;
-}
-
-.nav-btn:hover {
-    background: #f0f0f0;
-    color: var(--brand-primary);
-}
-
-.nav-btn.active {
-    color: var(--brand-primary);
-    border-bottom-color: var(--brand-accent);
-}
-
-/* ==============================
-   Page Content
-================================*/
-.page-content {
-    display: none;
-}
-
-.page-content.active {
-    display: block;
-    animation: fadeInPage 0.3s ease;
-}
-
-@keyframes fadeInPage {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
+// ================= FORMAT PIXELS FUNCTION =================
+function formatPixels(pixels) {
+    if (pixels >= 1000000) {
+        // Convert to millions (e.g., 1300000 → 1.3 Million)
+        return (pixels / 1000000).toFixed(1) + " Million pixels";
+    } else if (pixels >= 1000) {
+        // Convert to thousands (e.g., 650000 → 650K)
+        return (pixels / 1000).toFixed(0) + "K pixels";
+    } else {
+        return pixels.toLocaleString() + " pixels";
     }
 }
 
-/* ==============================
-   Content Body
-================================*/
-.content-body {
-    padding: 30px;
-}
+// =================  PowerConsumption Data =================
+const powerConsumptionData = {
+    indoor: {
+        "P1.25": { max: 586, avg: 195 },
+        "P1.538": { max: 488, avg: 163 },
+        "P1.839": { max: 488, avg: 163 },
+        "P2": { max: 488, avg: 163 },
+        "P2.5": { max: 488, avg: 163 },
+        "P2.6": { max: 675, avg: 202 },
+        "P2.9": { max: 480, avg: 144 },
+        "P3": { max: 543, avg: 180 },
+        "P3.076": { max: 488, avg: 163 },
+        "P3.91": { max: 500, avg: 150 },
+        "P4": { max: 488, avg: 163 }
+    },
 
-h2 {
-    margin-top: 0;
-    color: var(--brand-primary);
-    border-bottom: 2px solid var(--brand-accent);
-    padding-bottom: 8px;
-}
+    outdoor: {
+        "P2.5": { max: 879, avg: 264 },
+        "P2.60": { max: 675, avg: 202 },
+        "P3.076": { max: 879, avg: 264 },
+        "P3.910": { max: 630, avg: 189 },
+        "P4.810": { max: 540, avg: 162 },
+        "P4": { max: 879, avg: 264 },
+        "P5": { max: 879, avg: 264 },
+        "P6": { max: 895, avg: 269 },
+        "P6.66": { max: 879, avg: 264 },
+        "P8": { max: 879, avg: 264 },
+        "P10": { max: 645, avg: 195 }
+    }
+};
 
-h3 {
-    margin-bottom: 15px;
-    color: var(--brand-primary);
-}
+// ================= MEDIA PLAYER DATA (UPDATED - ONLY VX 1.3 & VX1000 Pro) =================
+const mediaPlayerData = [
+    // TB Series (Cloud Based) - Only TB2, TB40, TB60
+    {
+        model: "TB2 (Cloud)",
+        series: "TB",
+        maxPixels: 650000,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        videoDecoding: "1080P",
+        cloudBased: true
+    },
+    // VX Series (Non-Cloud Based) - ONLY VX 1.3 & VX1000 Pro
+    {
+        model: "VX 1.3 (Non-Cloud)",
+        series: "VX",
+        maxPixels: 1300000,
+        maxWidth: 3840,
+        maxHeight: 1920,
+        videoDecoding: "HD",
+        cloudBased: false
+    },
+    {
+        model: "TB40 (Cloud)",
+        series: "TB",
+        maxPixels: 1300000,
+        maxWidth: 4096,
+        maxHeight: 4096,
+        videoDecoding: "4K",
+        cloudBased: true
+    },
+    {
+        model: "TB60 (Cloud)",
+        series: "TB",
+        maxPixels: 2300000,
+        maxWidth: 4096,
+        maxHeight: 4096,
+        videoDecoding: "4K",
+        cloudBased: true
+    },
+    // DSP Series (Non-Cloud Based)
+    {
+        model: "DSP400 Pro (Non-Cloud)",
+        series: "DSP",
+        maxPixels: 2600000,
+        maxWidth: 10240,
+        maxHeight: 8192,
+        videoDecoding: "4K",
+        cloudBased: false
+    },
+    // SMP Pro Series
+    {
+        model: "SMP 4 Pro",
+        series: "SMP",
+        maxPixels: 2600000,
+        maxWidth: 4096,
+        maxHeight: 1920,
+        videoDecoding: "4K",
+        cloudBased: false
+    },
+    {
+        model: "DSP600 Pro (Non-Cloud)",
+        series: "DSP",
+        maxPixels: 3900000,
+        maxWidth: 10240,
+        maxHeight: 8192,
+        videoDecoding: "4K",
+        cloudBased: false
+    },
+    {
+        model: "SMP 6 Pro",
+        series: "SMP",
+        maxPixels: 3900000,
+        maxWidth: 4096,
+        maxHeight: 1920,
+        videoDecoding: "4K",
+        cloudBased: false
+    },
+    {
+        model: "VX1000 Pro (Non-Cloud)",
+        series: "VX",
+        maxPixels: 6500000,
+        maxWidth: 10240,
+        maxHeight: 8192,
+        videoDecoding: "4K",
+        cloudBased: false
+    },
+    // TB Series Higher (Cloud Based)
+    {
+        model: "MCTRL4K (Cloud)",
+        series: "TB",
+        maxPixels: 8800000,
+        maxWidth: 8192,
+        maxHeight: 8192,
+        videoDecoding: "4K UHD, 8K×1K@60Hz",
+        cloudBased: true
+    },
+    {
+        model: "NovaPro UHD (Cloud)",
+        series: "TB",
+        maxPixels: 10400000,
+        maxWidth: 8192,
+        maxHeight: 8192,
+        videoDecoding: "Up to 8K×1K@60Hz",
+        cloudBased: true
+    }
+];
 
-p {
-    color: var(--text-muted);
-    margin-bottom: 20px;
-}
+// ================= PIXEL PITCH DATA =================
+const pixelPitchData = {
 
-/* ==============================
-   Grid Layout
-================================*/
-.row {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -10px 20px;
-}
+    indoor: {
+        "P1.25": { module: "320x160", res: [256, 128] },
+        "P1.538": { module: "320x160", res: [208, 104] },
+        "P1.839": { module: "320x160", res: [174, 87] },
+        "P2": { module: "320x160", res: [160, 80] },
+        "P2.5": { module: "320x160", res: [128, 64] },
+        "P2.6": { module: "250x250", res: [96, 96] },
+        "P2.9": { module: "250x250", res: [64, 64] },
+        "P3": { module: "192x192", res: [64, 64] },
+        "P3.076": { module: "320x160", res: [104, 52] },
+        "P3.91": { module: "250x250", res: [64, 64] },
+        "P4": { module: "320x160", res: [80, 40] }
+    },
+    outdoor: {
+        "P2.5": { module: "320x160", res: [128, 64] },
+        "P2.60": { module: "250x250", res: [96, 96] },
+        "P3.076": { module: "320x160", res: [104, 52] },
+        "P3.910": { module: "250x250", res: [64, 64] },
+        "P4": { module: "320x160", res: [80, 40] },
+        "P4.810": { module: "250x250", res: [52, 52] },
+        "P5": { module: "320x160", res: [64, 32] },
+        "P6": { module: "192x192", res: [32, 32] },
+        "P6.66": { module: "320x160", res: [48, 24] },
+        "P8": { module: "320x160", res: [40, 20] },
+        "P10": { module: "320x160", res: [32, 16] }
+    }
+};
 
-.col-half {
-    flex: 50%;
-    padding: 0 10px;
-}
+let selectedModuleResolution = { w: 0, h: 0 };
 
-.col-full {
-    flex: 100%;
-    padding: 0 10px;
-}
+// ================= MEDIA PLAYER RECOMMENDATION (RETURNS ALL WITH SAME SMALLEST CAPACITY) =================
+function recommendMediaPlayers(totalPixels, resWidth, resHeight) {
+    // Find the first (smallest) player that can handle the screen
+    let firstMatch = null;
 
-/* ==============================
-   Form Elements
-================================*/
-.form-group {
-    margin-bottom: 18px;
-}
+    for (let i = 0; i < mediaPlayerData.length; i++) {
+        const player = mediaPlayerData[i];
 
-label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--brand-primary);
-    transition: opacity 0.3s ease;
-}
-
-select,
-input[type="number"] {
-    width: 100%;
-    padding: 12px;
-    font-size: 15px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    transition: all 0.2s ease;
-}
-
-select:focus,
-input[type="number"]:focus {
-    outline: none;
-    border-color: var(--brand-accent);
-    box-shadow: 0 0 0 2px rgba(0, 174, 239, 0.15);
-}
-
-/* Dual input group */
-.input-group-dual {
-    display: flex;
-    gap: 10px;
-}
-
-.input-group-dual input {
-    flex: 1;
-}
-
-/* ==============================
-   Helper Text / Notes
-================================*/
-small {
-    display: block;
-    font-size: 13px;
-    color: #999;
-    margin-top: 5px;
-    font-style: italic;
-}
-
-/* ==============================
-   Buttons
-================================*/
-.btn-calc {
-    width: 100%;
-    padding: 15px;
-    font-size: 17px;
-    font-weight: 700;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    background-color: var(--brand-accent);
-    color: var(--white);
-    transition: all 0.25s ease;
-}
-
-.btn-calc:hover {
-    background-color: var(--brand-primary);
-}
-
-.btn-verify {
-    background-color: var(--brand-primary);
-}
-
-.btn-verify:hover {
-    background-color: var(--brand-accent);
-}
-
-/* ==============================
-   Results Section
-================================*/
-.results-box {
-    background-color: var(--brand-bg-soft);
-    border: 1px solid var(--border-light);
-    padding: 20px;
-    border-radius: 6px;
-    margin-bottom: 30px;
-    display: none;
-}
-
-.results-box.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
-}
-
-.result-item {
-    font-size: 16px;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-}
-
-.result-item strong {
-    font-size: 18px;
-    color: var(--brand-primary);
-}
-
-/* Hide result item dynamically */
-#actualSizeRow {
-    transition: all 0.3s ease;
-}
-
-/* ==============================
-   Display Configuration Styles
-================================*/
-.display-config-wrapper {
-    display: flex;
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.config-panel {
-    flex: 0 0 400px;
-}
-
-.preview-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.form-section {
-    margin-bottom: 25px;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-}
-
-.form-section-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--brand-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 15px;
-}
-
-.form-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--brand-primary);
-    margin-bottom: 6px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d0d5dd;
-    border-radius: 4px;
-    font-size: 13px;
-    font-family: inherit;
-    background: white;
-    transition: all 0.2s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--brand-accent);
-    box-shadow: 0 0 0 2px rgba(0, 174, 239, 0.1);
-}
-
-.form-row-dual {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.input-with-buttons {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.input-with-buttons input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 1px solid #d0d5dd;
-    border-radius: 4px;
-    font-size: 13px;
-    text-align: center;
-}
-
-.input-with-buttons input:focus {
-    outline: none;
-    border-color: var(--brand-accent);
-}
-
-.btn-small {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #d0d5dd;
-    background: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    color: var(--brand-primary);
-    font-weight: bold;
-}
-
-.btn-small:hover {
-    border-color: var(--brand-accent);
-    color: var(--brand-accent);
-    background: rgba(0, 174, 239, 0.05);
-}
-
-/* ==============================
-   LED Grid Preview
-================================*/
-.preview-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #999;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    letter-spacing: 0.5px;
-}
-
-.led-grid-container {
-    position: relative;
-    margin-bottom: 40px;
-    display: inline-block;
-}
-
-.led-grid-visual {
-    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
-    border: 2px dashed rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    padding: 20px;
-    display: grid;
-    gap: 2px;
-    min-width: 280px;
-    max-width: 100%;
-    aspect-ratio: 16 / 9;
-    align-content: center;
-    justify-content: center;
-    overflow: auto;
-}
-
-.module-block {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-    min-height: 30px;
-    padding: 2px;
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.7);
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.1;
-}
-
-.module-block:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.dimension-label {
-    position: absolute;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--brand-primary);
-}
-
-.dimension-horizontal {
-    bottom: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.dimension-vertical {
-    right: -50px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* ==============================
-   Specifications Box
-================================*/
-.spec-box {
-    background: var(--brand-bg-soft);
-    border-left: 3px solid var(--brand-accent);
-    padding: 15px;
-    border-radius: 4px;
-    margin-top: 20px;
-    min-width: 280px;
-}
-
-.spec-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-bottom: 8px;
-    color: var(--text-dark);
-}
-
-.spec-item:last-child {
-    margin-bottom: 0;
-}
-
-.spec-label {
-    font-weight: 600;
-    color: var(--brand-primary);
-}
-
-.spec-value {
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-/* Divider */
-.section-divider {
-    height: 2px;
-    background-color: #eee;
-    margin: 35px 0;
-}
-
-/* ==============================
-   Animations
-================================*/
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
+        if (totalPixels <= player.maxPixels &&
+            resWidth <= player.maxWidth &&
+            resHeight <= player.maxHeight) {
+            firstMatch = player;
+            break; // Found the smallest capacity that works
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    // If no match found, return the highest spec player
+    if (!firstMatch) {
+        return [mediaPlayerData[mediaPlayerData.length - 1]];
+    }
+
+    // Now find ALL players with the SAME capacity as the first match
+    const matchingPlayers = [];
+    const targetCapacity = firstMatch.maxPixels;
+
+    for (let i = 0; i < mediaPlayerData.length; i++) {
+        const player = mediaPlayerData[i];
+
+        // Same capacity AND can handle the dimensions
+        if (player.maxPixels === targetCapacity &&
+            totalPixels <= player.maxPixels &&
+            resWidth <= player.maxWidth &&
+            resHeight <= player.maxHeight) {
+            matchingPlayers.push(player);
+        }
+    }
+
+    return matchingPlayers;
+}
+
+// ================= INSTALL TYPE CHANGE =================
+const allowedCobPitches = ["P1.25", "P1.538", "P1.839"];
+
+function updatePixelPitchOptions() {
+    const installType = document.getElementById("installType").value;
+    const indoorType = document.getElementById("indoorType")?.value || "SMD";
+    const pitchSelect = document.getElementById("pixelPitch");
+
+    pitchSelect.innerHTML = `<option value=""> Select Pixel Pitch </option>`;
+
+    if (!pixelPitchData[installType]) return;
+
+    let pitches = Object.keys(pixelPitchData[installType]);
+
+    if (installType === "indoor" && indoorType === "COB") {
+        pitches = pitches.filter(p => allowedCobPitches.includes(p));
+    }
+
+    pitches.forEach(p => {
+        pitchSelect.innerHTML += `<option value="${p}">${p}</option>`;
+    });
+}
+
+// ================= PIXEL PITCH CHANGE =================
+document.getElementById("pixelPitch").onchange = function () {
+    const type = document.getElementById("installType").value;
+    const pitch = this.value;
+    if (!pixelPitchData[type] || !pixelPitchData[type][pitch]) return;
+
+    const cfg = pixelPitchData[type][pitch];
+    document.getElementById("moduleSize").value = cfg.module;
+    selectedModuleResolution = { w: cfg.res[0], h: cfg.res[1] };
+};
+
+// ================= MAIN CALCULATION =================
+function calculateMain() {
+
+    const installType = document.getElementById("installType")?.value || "";
+    const indoorType = document.getElementById("indoorType")?.value || "SMD";
+    const pixelPitch = document.getElementById("pixelPitch")?.value || "";
+
+    const modStr = document.getElementById("moduleSize").value;
+    const cabStr = document.getElementById("cabinetSize").value;
+    const screenW = Number(document.getElementById("screenW").value);
+    const screenH = Number(document.getElementById("screenH").value);
+
+    if (!modStr) {
+        alert("Please fill all required fields!");
+        return;
+    }
+
+    if (!pixelPitch) {
+        alert("Please select Pixel Pitch!");
+        return;
+    }
+
+    // Handle cabinet size - either selected or custom
+    let cab = { w: 0, h: 0 };
+    let isCustomCabinet = false;
+
+    if (cabStr === "custom") {
+        // Use custom cabinet dimensions
+        const customW = Number(document.getElementById("customCabinetW").value);
+        const customH = Number(document.getElementById("customCabinetH").value);
+
+        if (!customW || !customH || customW <= 0 || customH <= 0) {
+            alert("Please enter valid custom cabinet dimensions!");
+            return;
+        }
+
+        cab = { w: customW, h: customH };
+        isCustomCabinet = true;
+    } else if (cabStr) {
+        // Use selected cabinet
+        cab = parseDimensionString(cabStr);
+        isCustomCabinet = false;
+    } else {
+        // No cabinet selected and not custom
+        alert("Please select a cabinet size or choose 'Custom Cabinet Size'!");
+        return;
+    }
+
+    const mod = parseDimensionString(modStr);
+
+    let modW, modH, actualW, actualH;
+
+    if (isCustomCabinet) {
+        // For custom cabinet: calculate modules that fit in the cabinet
+        modW = Math.floor(cab.w / mod.w);
+        modH = Math.floor(cab.h / mod.h);
+        actualW = modW * mod.w;
+        actualH = modH * mod.h;
+    } else {
+        // For standard cabinet: use NEAREST cabinet count (rounded)
+        if (!screenW || !screenH) {
+            alert("Please enter target screen size!");
+            return;
+        }
+
+        // Calculate nearest cabinet count
+        const nearestCabW = Math.max(1, Math.round(screenW / cab.w));
+        const nearestCabH = Math.max(1, Math.round(screenH / cab.h));
+
+        // Calculate actual dimensions based on nearest cabinets
+        actualW = nearestCabW * cab.w;
+        actualH = nearestCabH * cab.h;
+
+        // Calculate modules based on actual dimensions
+        modW = actualW / mod.w;
+        modH = actualH / mod.h;
+    }
+
+    const totalModules = modW * modH;
+
+
+    document.getElementById("mainResults").classList.add("active");
+
+    // ================= EXTRA CALCULATIONS =================
+
+    // Area in square feet
+    const areaSqFt = ((actualW * actualH) / 1000000) * 10.7639;
+
+    // Diagonal in inches
+    const diagonalMm = Math.sqrt(Math.pow(actualW, 2) + Math.pow(actualH, 2));
+    const diagonalInches = diagonalMm / 25.4;
+
+    // cabinet calculation
+    const cabW = Math.ceil(actualW / cab.w);
+    const cabH = Math.ceil(actualH / cab.h);
+    const totalCab = cabW * cabH;
+
+    // resolution
+    const totalResW = modW * selectedModuleResolution.w;
+    const totalResH = modH * selectedModuleResolution.h;
+    const totalPixels = totalResW * totalResH;
+
+    // ================= NEAREST SIZE CALCULATION (CABINET BASED) =================
+    let nearestSizeW = 0;
+    let nearestSizeH = 0;
+
+    if (!isCustomCabinet && cab.w > 0 && cab.h > 0) {
+        // Find nearest whole number of cabinets
+        // We use Math.round to find the closest fit (rounding up or down)
+        // e.g. 3000 / 960 = 3.125 -> 3 cabinets (2880mm)
+        // e.g. 3500 / 960 = 3.645 -> 4 cabinets (3840mm)
+        let nearCabW = Math.round(screenW / cab.w);
+        let nearCabH = Math.round(screenH / cab.h);
+
+        // Ensure at least 1 cabinet if input is present
+        if (nearCabW === 0 && screenW > 0) nearCabW = 1;
+        if (nearCabH === 0 && screenH > 0) nearCabH = 1;
+
+        nearestSizeW = nearCabW * cab.w;
+        nearestSizeH = nearCabH * cab.h;
+    }
+
+    // ================= POWER DATA (FIXED) =================
+    let powerData = null;
+    if (powerConsumptionData[installType] &&
+        powerConsumptionData[installType][pixelPitch]) {
+        powerData = powerConsumptionData[installType][pixelPitch];
+    }
+
+    if (!powerData) {
+        alert("Power data not available for selected configuration!");
+        return;
+    }
+
+    // screen area
+    const screenAreaSqM = (actualW * actualH) / 1000000;
+
+    // kW calculation
+    const totalMaxKW = (screenAreaSqM * powerData.max) / 1000;
+    const totalAvgKW = (screenAreaSqM * powerData.avg) / 1000;
+
+    const powerFactor = 0.8;
+    const totalMaxKVA = totalMaxKW / powerFactor;
+    const totalAvgKVA = totalAvgKW / powerFactor;
+
+    // ================= MEDIA PLAYER RECOMMENDATION (ALL WITH SAME CAPACITY) =================
+    const recommendedPlayers = recommendMediaPlayers(totalPixels, totalResW, totalResH);
+
+    // ================= OUTPUT =================
+    document.getElementById("resTotalModules").innerText = totalModules;
+    document.getElementById("resModW").innerText = modW;
+    document.getElementById("resModH").innerText = modH;
+
+    // ================= SMPS CALCULATION =================
+    const smpsData = calculateSMPS(totalModules, installType);
+    document.getElementById("resSMPSUnits").innerText = smpsData.units;
+    document.getElementById("resSMPSConfig").innerText = smpsData.config;
+
+    document.getElementById("resCabW").innerText = cabW;
+    document.getElementById("resCabH").innerText = cabH;
+    document.getElementById("resTotalCabinets").innerText = totalCab;
+
+    // Update the actual size text
+    document.getElementById("resActualSize").innerText = `${actualW}mm x ${actualH}mm`;
+
+    // Show actual size for standard cabinets, hide for custom cabinets
+    if (isCustomCabinet) {
+        document.getElementById("actualSizeRow").style.display = "none";
+    } else {
+        document.getElementById("actualSizeRow").style.display = "block";
+    }
+
+    // Always hide the nearest size row (it's now redundant since we calculate based on nearest)
+    document.getElementById("nearestSizeRow").style.display = "none";
+
+
+
+    document.getElementById("resTotalResolution").innerText =
+        `${totalResW}px × ${totalResH}px`;
+
+    document.getElementById("resPowerMax").innerText = powerData.max;
+    document.getElementById("resPowerAvg").innerText = powerData.avg;
+
+    document.getElementById("resTotalMaxKW").innerText =
+        totalMaxKW.toFixed(2) + " kW";
+
+    document.getElementById("resTotalAvgKW").innerText =
+        totalAvgKW.toFixed(2) + " kW";
+
+    document.getElementById("resTotalMaxKVA").innerText =
+        totalMaxKVA.toFixed(2) + " kVA";
+    document.getElementById("resTotalAvgKVA").innerText =
+        totalAvgKVA.toFixed(2) + " kVA";
+
+    // ================= MEDIA PLAYER OUTPUT (SHOW ALL WITH SAME CAPACITY) =================
+    if (recommendedPlayers.length === 1) {
+        const player = recommendedPlayers[0];
+        document.getElementById("resMediaModel").innerText = player.model;
+        document.getElementById("resMediaPixels").innerText = formatPixels(player.maxPixels);
+        document.getElementById("resMediaWidth").innerText =
+            player.maxWidth.toLocaleString() + " px";
+        document.getElementById("resMediaHeight").innerText =
+            player.maxHeight.toLocaleString() + " px";
+        document.getElementById("resMediaDecoding").innerText =
+            player.videoDecoding;
+    } else {
+        // Multiple players with same capacity - show with OR
+        let modelsText = "";
+        let pixelsText = "";
+        let widthText = "";
+        let heightText = "";
+        let decodingText = "";
+
+        recommendedPlayers.forEach((player, index) => {
+            const separator = index < recommendedPlayers.length - 1 ? " OR " : "";
+            modelsText += player.model + separator;
+            pixelsText += formatPixels(player.maxPixels) + separator;
+            widthText += player.maxWidth.toLocaleString() + " px" + separator;
+            heightText += player.maxHeight.toLocaleString() + " px" + separator;
+            decodingText += player.videoDecoding + separator;
+        });
+
+        document.getElementById("resMediaModel").innerText = modelsText;
+        document.getElementById("resMediaPixels").innerText = pixelsText;
+        document.getElementById("resMediaWidth").innerText = widthText;
+        document.getElementById("resMediaHeight").innerText = heightText;
+        document.getElementById("resMediaDecoding").innerText = decodingText;
+    }
+
+    document.getElementById("mainResults").classList.add("active");
+
+    document.getElementById("checkModW").value = modW;
+    document.getElementById("checkModH").value = modH;
+}
+
+// ================= CABINET MAPPING FOR OUTDOOR =================
+const outdoorCabinetsByModule = {
+    "320x160": ["960x1280", "1280x1280", "1280x960", "640x960", "640x1280"],
+    "192x192": ["960x960", "1152x1152", "960x1152", "1152x960"]
+};
+
+// Cabinet mapping by specific pixel pitch and module combination
+const specificCabinetsByPitch = {
+    "P6": {
+        "192x192": ["960x960", "1152x1152", "960x1152", "1152x960"]
+    }
+};
+
+// ================= STORE ALL CABINET OPTIONS =================
+const allCabinetOptions = [
+    { value: "", text: "Select Cabinet Size", group: "placeholder" },
+    { value: "960x1280", text: "960mm x 1280mm (Outdoor 320x160)", group: "outdoor320" },
+    { value: "1280x1280", text: "1280mm x 1280mm (Outdoor 320x160)", group: "outdoor320" },
+    { value: "1280x960", text: "1280mm x 960mm (Outdoor 320x160)", group: "outdoor320" },
+    { value: "640x960", text: "640mm x 960mm (Outdoor 320x160)", group: "outdoor320" },
+    { value: "640x1280", text: "640mm x 1280mm (Outdoor 320x160)", group: "outdoor320" },
+    { value: "960x960", text: "960mm x 960mm (Outdoor & Indoor)", group: "outdoor192" },
+    { value: "1152x1152", text: "1152mm x 1152mm (Outdoor 192x192)", group: "outdoor192" },
+    { value: "960x1152", text: "960mm x 1152mm (Outdoor 192x192)", group: "outdoor192" },
+    { value: "1152x960", text: "1152mm x 960mm (Outdoor 192x192)", group: "outdoor192" },
+    { value: "500x500", text: "500mm x 500mm (Die cast aluminium)", group: "cob", dataCob: "yes" },
+    { value: "640x480", text: "640mm x 480mm (Die cast aluminium)", group: "cob", dataCob: "yes" },
+    { value: "640x640", text: "640mm x 640mm (Die cast aluminium)", group: "cob", dataCob: "yes" },
+    { value: "576x576", text: "576mm x 576mm (Die cast aluminium)", group: "cob", dataCob: "yes" },
+    { value: "600x337.5", text: "600mm x 337.5mm (Die cast aluminium)", group: "cob", dataCob: "yes" },
+    { value: "500x1000", text: "500mm x 1000mm (Indoor)", group: "indoor" }
+];
+
+// ================= Cabinets size =================
+function updateCabinetOptions() {
+    const installType = document.getElementById("installType")?.value;
+    const indoorType = document.getElementById("indoorType")?.value;
+    const moduleSize = document.getElementById("moduleSize")?.value || "";
+    const pixelPitch = document.getElementById("pixelPitch")?.value || "";
+    const cabinetSelect = document.getElementById("cabinetSize");
+
+    if (!cabinetSelect) return;
+
+    let allowedOptions = [];
+
+    if (installType === "indoor" && indoorType === "COB") {
+        // For indoor COB, show COB-compatible cabinets + 960x960 (common) + placeholder
+        allowedOptions = allCabinetOptions.filter(opt =>
+            opt.group === "placeholder" || opt.group === "cob" || opt.value === "960x960"
+        );
+    } else if (installType === "indoor" && indoorType === "SMD") {
+        // For indoor SMD, show COB + indoor + 960x960 (common) + placeholder
+        allowedOptions = allCabinetOptions.filter(opt =>
+            opt.group === "placeholder" || opt.group === "cob" || opt.group === "indoor" || opt.value === "960x960"
+        );
+    } else if (installType === "outdoor") {
+        // For outdoor, determine which cabinets to show
+        allowedOptions = [allCabinetOptions[0]]; // Always add placeholder
+
+        let allowedCabinets = [];
+
+        // Check if there's a specific combination (e.g., P6 + 192x192)
+        if (specificCabinetsByPitch[pixelPitch] && specificCabinetsByPitch[pixelPitch][moduleSize]) {
+            allowedCabinets = specificCabinetsByPitch[pixelPitch][moduleSize];
+        } else if (outdoorCabinetsByModule[moduleSize]) {
+            // Otherwise use general module-based mapping
+            allowedCabinets = outdoorCabinetsByModule[moduleSize];
+        }
+
+        // Add matching cabinets to allowed options
+        allCabinetOptions.forEach(opt => {
+            if (allowedCabinets.includes(opt.value) || opt.value === "960x960") {
+                if (opt.value !== "") { // Don't add placeholder twice
+                    allowedOptions.push(opt);
+                }
+            }
+        });
+    } else {
+        // Default: show placeholder only
+        allowedOptions = [allCabinetOptions[0]];
+    }
+
+    // Always add custom option at the end
+    allowedOptions.push({ value: "custom", text: "⚙️ Custom Cabinet Size", group: "custom" });
+
+    // Rebuild the select dropdown with only allowed options
+    cabinetSelect.innerHTML = "";
+    allowedOptions.forEach(opt => {
+        const optElement = document.createElement("option");
+        optElement.value = opt.value;
+        optElement.textContent = opt.text;
+        if (opt.dataCob) {
+            optElement.dataset.cob = opt.dataCob;
+        }
+        cabinetSelect.appendChild(optElement);
+    });
+
+    // Clear selection if no valid option is selected
+    if (cabinetSelect.selectedOptions.length === 0 || cabinetSelect.value === "") {
+        cabinetSelect.value = "";
     }
 }
 
-/* ==============================
-   Responsive Design
-================================*/
-@media (max-width: 1024px) {
-    .display-config-wrapper {
-        flex-direction: column;
-        gap: 20px;
+// ================= SMPS CALCULATION FUNCTION =================
+function calculateSMPS(totalModules, ledType) {
+    // SMPS 60A configuration:
+    // Indoor: 8 modules per SMPS
+    // Outdoor: 6 modules per SMPS
+
+    const modulesPerSMPS = ledType === "indoor" ? 8 : 6;
+    const smpsUnits = Math.ceil(totalModules / modulesPerSMPS);
+
+    return {
+        units: smpsUnits,
+        modulesPerUnit: modulesPerSMPS,
+        config: `${modulesPerSMPS} modules per SMPS (${ledType === "indoor" ? "Indoor" : "Outdoor"})`
+    };
+}
+
+// ================= VERIFY SIZE =================
+function verifySize() {
+    const modStr = document.getElementById("moduleSize").value;
+    const mod = parseDimensionString(modStr);
+    const w = Number(document.getElementById("checkModW").value);
+    const h = Number(document.getElementById("checkModH").value);
+    if (!w || !h) {
+        alert("Please enter module counts!");
+        return;
     }
 
-    .config-panel {
-        flex: none;
+    document.getElementById("verModUsed").innerText = modStr;
+    document.getElementById("verScreenSize").innerText =
+        `${w * mod.w}mm x ${h * mod.h}mm`;
+
+    document.getElementById("verifyResults").classList.add("active");
+}
+
+// ================= QUOTATION CALCULATOR =================
+function calculateQuotation() {
+    const w = Number(document.getElementById("quotationW").value);
+    const h = Number(document.getElementById("quotationH").value);
+
+    if (!w || !h || w <= 0 || h <= 0) {
+        alert("Please enter valid width and height in mm!");
+        return;
     }
 
-    .preview-panel {
-        align-items: center;
+    // proposed size in mm
+    document.getElementById("quotSizeMm").innerText = `${w}mm x ${h}mm`;
+
+    // mm to feet = mm / 304.8
+    const wFt = w / 304.8;
+    const hFt = h / 304.8;
+    document.getElementById("quotSizeFt").innerText = `${wFt.toFixed(2)}ft x ${hFt.toFixed(2)}ft`;
+
+    // total area in sq ft
+    const areaSqFt = wFt * hFt;
+    document.getElementById("quotAreaSqFt").innerText = `${areaSqFt.toFixed(2)} sq ft`;
+
+    // diagonal in inches
+    const diagMm = Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2));
+    const diagInch = diagMm / 25.4;
+    document.getElementById("quotDiagonalInch").innerText = `${diagInch.toFixed(2)} inch`;
+
+    document.getElementById("quotationResults").classList.add("active");
+}
+
+// ================= indoor types cob and smd =================
+const installTypeSelect = document.getElementById("installType");
+const indoorTypeWrapper = document.getElementById("indoorTypeWrapper");
+const indoorTypeSelect = document.getElementById("indoorType");
+
+installTypeSelect.addEventListener("change", function () {
+    if (this.value === "indoor") {
+        indoorTypeWrapper.style.display = "block";
+    } else {
+        indoorTypeWrapper.style.display = "none";
+        indoorTypeSelect.value = "SMD";
     }
-}
+});
 
-@media (max-width: 768px) {
-    .col-half {
-        flex: 100%;
-    }
+// ================= SAFE EVENT BINDING =================
+setTimeout(() => {
+    document.getElementById("calculateBtn")?.addEventListener("click", calculateMain);
+    document.getElementById("verifyBtn")?.addEventListener("click", verifySize);
+    document.getElementById("quotationBtn")?.addEventListener("click", calculateQuotation);
+    document.getElementById("installType").addEventListener("change", updatePixelPitchOptions);
+    document.getElementById("indoorType").addEventListener("change", updatePixelPitchOptions);
+    document.getElementById("installType").addEventListener("change", updateCabinetOptions);
+    document.getElementById("indoorType").addEventListener("change", updateCabinetOptions);
+    document.getElementById("moduleSize").addEventListener("change", updateCabinetOptions);
+    document.getElementById("pixelPitch").addEventListener("change", updateCabinetOptions);
 
-    .brand-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+    // Custom cabinet size toggle
+    document.getElementById("cabinetSize").addEventListener("change", function () {
+        const customWrapper = document.getElementById("customCabinetWrapper");
+        const screenSizeNote = document.getElementById("screenSizeNote");
+        const targetScreenLabel = document.getElementById("targetScreenLabel");
 
-    .brand-subtext {
-        margin-left: 0;
-    }
-
-    .page-navigation {
-        flex-direction: column;
-    }
-
-    .nav-btn {
-        border-bottom: none;
-        border-left: 3px solid transparent;
-    }
-
-    .nav-btn.active {
-        border-left-color: var(--brand-accent);
-        border-bottom: none;
-    }
-
-    .form-row-dual {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ==============================
-   Viewing Distance Section
-================================*/
-
-#viewResult {
-    margin-top: 15px;
-}
-
-#viewResult .result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    font-size: 16px;
-}
-
-#viewResult .result-item strong {
-    font-size: 18px;
-    color: var(--brand-primary);
-}
-
-/* Highlight Suggested Pixel Pitch */
-#suggestedPitch {
-    color: var(--brand-accent);
-    font-weight: 700;
-    font-size: 20px;
-}
-
-/* Input focus improvement for viewing distance */
-#viewDistance:focus,
-#viewUnit:focus {
-    border-color: var(--brand-accent);
-    box-shadow: 0 0 0 2px rgba(0, 174, 239, 0.15);
-}
-
-/* Optional badge-style look for suggestion */
-.view-suggestion {
-    background-color: #e6f7fd;
-    border: 1px dashed var(--brand-accent);
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin-top: 10px;
-}
-
-#mediaPlayerResult strong {
-    color: var(--brand-accent);
-    font-size: 18px;
-}
-
-/* SMPS Section Styling */
-.results-box strong {
-    color: var(--brand-primary);
-}
-
-#resSMPSUnits {
-    color: #27ae60;
-    font-size: 20px;
-}
-
-#resSMPSConfig {
-    color: var(--brand-accent);
-    font-size: 16px;
-}
-
-/* ================= EMAIL POPUP ================= */
-.email-popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.email-popup-content {
-    background: #fff;
-    padding: 25px;
-    width: 320px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.email-popup-content h3 {
-    margin-bottom: 15px;
-    color: var(--brand-primary);
-}
-
-.email-popup-content input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.email-popup-content button {
-    width: 100%;
-    padding: 12px;
-    background: var(--brand-accent);
-    border: none;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.email-popup-content button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
-/* ================= LARGE INPUTS ================= */
-.input-large {
-    padding: 15px !important;
-    font-size: 18px !important;
-    font-weight: 700;
-    border: 2px solid #ddd;
-    background-color: #fcfcfc;
-    height: auto !important;
-}
-
-.input-large:focus {
-    border-color: var(--brand-accent) !important;
-    background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(0, 174, 239, 0.1) !important;
-}
-
-/* Make the label for large inputs stand out too */
-#targetScreenLabel {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--brand-primary);
-    margin-bottom: 10px;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
+        if (this.value === "custom") {
+            customWrapper.style.display = "block";
+            screenSizeNote.style.display = "block";
+            targetScreenLabel.style.opacity = "0.6";
+        } else {
+            customWrapper.style.display = "none";
+            screenSizeNote.style.display = "none";
+            targetScreenLabel.style.opacity = "1";
+        }
+    });
+}, 0);
