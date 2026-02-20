@@ -643,6 +643,36 @@ function verifySize() {
     document.getElementById("verifyResults").classList.add("active");
 }
 
+// ================= QUOTATION CALCULATOR =================
+function calculateQuotation() {
+    const w = Number(document.getElementById("quotationW").value);
+    const h = Number(document.getElementById("quotationH").value);
+
+    if (!w || !h || w <= 0 || h <= 0) {
+        alert("Please enter valid width and height in mm!");
+        return;
+    }
+
+    // proposed size in mm
+    document.getElementById("quotSizeMm").innerText = `${w}mm x ${h}mm`;
+
+    // mm to feet = mm / 304.8
+    const wFt = w / 304.8;
+    const hFt = h / 304.8;
+    document.getElementById("quotSizeFt").innerText = `${wFt.toFixed(2)}ft x ${hFt.toFixed(2)}ft`;
+
+    // total area in sq ft
+    const areaSqFt = wFt * hFt;
+    document.getElementById("quotAreaSqFt").innerText = `${areaSqFt.toFixed(2)} sq ft`;
+
+    // diagonal in inches
+    const diagMm = Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2));
+    const diagInch = diagMm / 25.4;
+    document.getElementById("quotDiagonalInch").innerText = `${diagInch.toFixed(2)} inch`;
+
+    document.getElementById("quotationResults").classList.add("active");
+}
+
 // ================= indoor types cob and smd =================
 const installTypeSelect = document.getElementById("installType");
 const indoorTypeWrapper = document.getElementById("indoorTypeWrapper");
@@ -661,6 +691,7 @@ installTypeSelect.addEventListener("change", function () {
 setTimeout(() => {
     document.getElementById("calculateBtn")?.addEventListener("click", calculateMain);
     document.getElementById("verifyBtn")?.addEventListener("click", verifySize);
+    document.getElementById("quotationBtn")?.addEventListener("click", calculateQuotation);
     document.getElementById("installType").addEventListener("change", updatePixelPitchOptions);
     document.getElementById("indoorType").addEventListener("change", updatePixelPitchOptions);
     document.getElementById("installType").addEventListener("change", updateCabinetOptions);
