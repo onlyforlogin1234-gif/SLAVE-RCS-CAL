@@ -201,7 +201,38 @@
                 </div>
             </div>
 
+            <div class="section-divider"></div>
 
+            <!-- PAGE SECTION: QUOTATION CALCULATOR -->
+            <div id="quotationSection" class="page-content active" style="margin-top: 40px; padding-bottom: 40px;">
+                <h2>3. Quotation Calculator</h2>
+                <p>Quickly calculate screen dimensions and area for quotations.</p>
+
+                <div class="row">
+                    <div class="col-full">
+                        <label>Enter Screen Size (Width x Height mm)</label>
+                        <div class="input-group-dual">
+                            <input type="number" id="quotationW" class="input-large" placeholder="Width (mm)" min="1">
+                            <input type="number" id="quotationH" class="input-large" placeholder="Height (mm)" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-calc" id="quotationBtn"
+                    style="background: var(--brand-accent); color: white;">Calculate Quotation</button>
+
+                <div id="quotationResults" class="results-box">
+                    <h3>Quotation Details</h3>
+                    <div class="result-item">Proposed Size (ft): <strong id="quotSizeFt"
+                            style="color: var(--brand-primary);">0ft x 0ft</strong></div>
+                    <div class="result-item">Proposed Size (mm): <strong id="quotSizeMm"
+                            style="color: var(--brand-primary);">0mm x 0mm</strong></div>
+                    <div class="result-item">Total Area: <strong id="quotAreaSqFt"
+                            style="color: var(--brand-primary);">0 sq ft</strong></div>
+                    <div class="result-item">Screen Diagonal: <strong id="quotDiagonalInch"
+                            style="color: var(--brand-primary);">0 inch</strong></div>
+                </div>
+            </div>
 
         </div>
     </div>
