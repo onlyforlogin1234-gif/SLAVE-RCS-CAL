@@ -678,41 +678,43 @@ const installTypeSelect = document.getElementById("installType");
 const indoorTypeWrapper = document.getElementById("indoorTypeWrapper");
 const indoorTypeSelect = document.getElementById("indoorType");
 
-installTypeSelect.addEventListener("change", function () {
-    if (this.value === "indoor") {
-        indoorTypeWrapper.style.display = "block";
-    } else {
-        indoorTypeWrapper.style.display = "none";
-        indoorTypeSelect.value = "SMD";
-    }
-});
+if (installTypeSelect) {
+    installTypeSelect.addEventListener("change", function () {
+        if (this.value === "indoor") {
+            if (indoorTypeWrapper) indoorTypeWrapper.style.display = "block";
+        } else {
+            if (indoorTypeWrapper) indoorTypeWrapper.style.display = "none";
+            if (indoorTypeSelect) indoorTypeSelect.value = "SMD";
+        }
+    });
+}
 
 // ================= SAFE EVENT BINDING =================
 setTimeout(() => {
     document.getElementById("calculateBtn")?.addEventListener("click", calculateMain);
     document.getElementById("verifyBtn")?.addEventListener("click", verifySize);
     document.getElementById("quotationBtn")?.addEventListener("click", calculateQuotation);
-    document.getElementById("installType").addEventListener("change", updatePixelPitchOptions);
-    document.getElementById("indoorType").addEventListener("change", updatePixelPitchOptions);
-    document.getElementById("installType").addEventListener("change", updateCabinetOptions);
-    document.getElementById("indoorType").addEventListener("change", updateCabinetOptions);
-    document.getElementById("moduleSize").addEventListener("change", updateCabinetOptions);
-    document.getElementById("pixelPitch").addEventListener("change", updateCabinetOptions);
+    document.getElementById("installType")?.addEventListener("change", updatePixelPitchOptions);
+    document.getElementById("indoorType")?.addEventListener("change", updatePixelPitchOptions);
+    document.getElementById("installType")?.addEventListener("change", updateCabinetOptions);
+    document.getElementById("indoorType")?.addEventListener("change", updateCabinetOptions);
+    document.getElementById("moduleSize")?.addEventListener("change", updateCabinetOptions);
+    document.getElementById("pixelPitch")?.addEventListener("change", updateCabinetOptions);
 
     // Custom cabinet size toggle
-    document.getElementById("cabinetSize").addEventListener("change", function () {
+    document.getElementById("cabinetSize")?.addEventListener("change", function () {
         const customWrapper = document.getElementById("customCabinetWrapper");
         const screenSizeNote = document.getElementById("screenSizeNote");
         const targetScreenLabel = document.getElementById("targetScreenLabel");
 
         if (this.value === "custom") {
-            customWrapper.style.display = "block";
-            screenSizeNote.style.display = "block";
-            targetScreenLabel.style.opacity = "0.6";
+            if (customWrapper) customWrapper.style.display = "block";
+            if (screenSizeNote) screenSizeNote.style.display = "block";
+            if (targetScreenLabel) targetScreenLabel.style.opacity = "0.6";
         } else {
-            customWrapper.style.display = "none";
-            screenSizeNote.style.display = "none";
-            targetScreenLabel.style.opacity = "1";
+            if (customWrapper) customWrapper.style.display = "none";
+            if (screenSizeNote) screenSizeNote.style.display = "none";
+            if (targetScreenLabel) targetScreenLabel.style.opacity = "1";
         }
     });
 }, 0);
